@@ -31,6 +31,7 @@ Fast JSON API serialized 250 records in 3.01 ms
   * [Object Serialization](#object-serialization)
   * [Compound Document](#compound-document)
   * [Key Transforms](#key-transforms)
+  * [Pluralize Type](#pluralize-type)
   * [Collection Serialization](#collection-serialization)
   * [Caching](#caching)
   * [Params](#params)
@@ -167,7 +168,7 @@ json_string = MovieSerializer.new(movie).serialized_json
 ```
 
 ### Key Transforms
-By default fast_jsonapi underscores the key names. It supports the same key transforms that are supported by AMS. Here is the syntax of specifying a key transform
+By default fast_jsonapi underscores the key names. It supports the same key transforms that are supported by AMS. Here is the syntax of specifying a key transform:
 
 ```ruby
 class MovieSerializer
@@ -176,7 +177,7 @@ class MovieSerializer
   set_key_transform :camel
 end
 ```
-Here are examples of how these options transform the keys
+Here are examples of how these options transform the keys.
 
 ```ruby
 set_key_transform :camel # "some_key" => "SomeKey"
@@ -184,6 +185,29 @@ set_key_transform :camel_lower # "some_key" => "someKey"
 set_key_transform :dash # "some_key" => "some-key"
 set_key_transform :underscore # "some_key" => "some_key"
 ```
+
+### Pluralize Type
+
+By default fast_jsonapi does not pluralize type names. You can turn pluralization on using this syntax:
+
+```ruby
+class AwardSerializer
+  include FastJsonapi::ObjectSerializer
+  belongs_to :actor
+  pluralize_type true # "award" => "awards"
+end
+```
+
+Relationship types are not automatically pluralized, even when their base types have `pluralize_type` set. Pluralization can be enabled in the relationship definition.
+
+```ruby
+class ActorSerializer
+  include FastJsonapi::ObjectSerializer
+  has_many :awards, pluralize_type: true # "award" => "awards"
+end
+```
+
+The most common use case for this feature is to easily migrate from serialization engines that pluralize by default, such as AMS.
 
 ### Attributes
 Attributes are defined in FastJsonapi using the `attributes` method.  This method is also aliased as `attribute`, which is useful when defining a single attribute.
