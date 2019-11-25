@@ -1,6 +1,6 @@
 module FastJsonapi
   class Relationship
-    attr_reader :key, :name, :id_method_name, :record_type, :pluralized_type, :object_method_name, :object_block, :serializer, :relationship_type, :cached, :polymorphic, :conditional_proc, :transform_method, :links, :lazy_load_data
+    attr_reader :key, :name, :id_method_name, :record_type, :pluralized_type, :object_method_name, :object_block, :serializer, :relationship_type, :cached, :polymorphic, :conditional_proc, :transform_method, :links, :lazy_load_data, :meta
 
     def initialize(
       key:,
@@ -17,6 +17,7 @@ module FastJsonapi
       conditional_proc:,
       transform_method:,
       links:,
+      meta:,
       lazy_load_data: false
     )
       @key = key
@@ -33,6 +34,7 @@ module FastJsonapi
       @conditional_proc = conditional_proc
       @transform_method = transform_method
       @links = links || {}
+      @meta = meta || {}
       @lazy_load_data = lazy_load_data
     end
 
@@ -45,6 +47,7 @@ module FastJsonapi
           output_hash[key][:data] = ids_hash_from_record_and_relationship(record, serialization_params) || empty_case
         end
         add_links_hash(record, serialization_params, output_hash) if links.present?
+        add_meta_hash(record, serialization_params, output_hash) if meta.present?
       end
     end
 
@@ -112,6 +115,14 @@ module FastJsonapi
         output_hash[key][:links] = links.each_with_object({}) do |(key, method), hash|
           Link.new(key: key, method: method).serialize(record, params, hash)\
         end
+      end
+    end
+
+    def add_meta_hash(record, params, output_hash)
+      if meta.is_a?(Symbol)
+        output_hash[key][:meta] = record.public_send(meta)
+      else
+        output_hash[key][:meta] = meta.call(record, params)
       end
     end
 
