@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'benchmark'
 
 describe FastJsonapi::ObjectSerializer, performance: true do
   include_context 'movie class'
